@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Campus Login</title>
+    <h1>
+        Campus Portal Student Management System   
+    </h1>
+    <style>
+        body {
+            font-family: Arial;
+            background: #88d8da;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-box {
+            background: rgb(152, 137, 201);
+            padding: 30px;
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #050c77;
+            color: rgb(204, 228, 229);
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-box">
+    <h2>Smart Campus</h2>
+    <input type="text" placeholder="Email">
+    
+    <input type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+   <script>
+function login() {
+    let email = document.querySelector("input[type='text']").value;
+    let pass = document.querySelector("input[type='password']").value;
+
+    if(email === "" || pass === "") {
+        alert("Please fill all fields");
+    } else {
+        window.location.href = "dashboard.html";
+    }
+}
+</script>
+</div>
+</body>
+</html>
+
