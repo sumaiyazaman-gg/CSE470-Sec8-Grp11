@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard – Campus Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <div class="navbar-logo">S</div>
+    <span class="navbar-title">Campus <span>Portal</span></span>
+  </div>
+  <div class="navbar-user">
+    <button class="btn btn-outline btn-sm" id="notif-toggle" onclick="toggleNotifications()" style="margin-right:8px;">🔔</button>
+    <div class="navbar-avatar" id="nav-avatar">?</div>
+    <span id="nav-name"></span>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('requests')">📋 My Requests</button>
+    <button class="tab" onclick="showTab('submit')">➕ Submit Request</button>
+    <button class="tab" onclick="showTab('bookings')">🏛️ Facility Booking</button>
+    <button class="tab" onclick="showTab('announcements')">📢 Announcements</button>
+    <button class="tab" onclick="showTab('events')">🗓️ Events</button>
+  </div>
+
+  <!-- ── MY REQUESTS ── -->
+  <div id="tab-requests" class="tab-panel active">
+    <div class="section-header">
+      <h2 class="section-title">My Requests</h2>
+    </div>
+    <div id="requests-list"><div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading…</div></div></div>
+  </div>
+
+  <!-- ── SUBMIT REQUEST ── -->
+  <div id="tab-submit" class="tab-panel">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📝 New Request</div>
+        <div id="submit-alert" class="alert"></div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="req-category">
+            <option>General</option>
+            <option>Maintenance</option>
+            <option>IT Support</option>
+            <option>Academic</option>
+            <option>Finance</option>
+            <option>Library</option>
+            <option>Sports</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="req-title" placeholder="Brief summary of your request">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="req-desc" placeholder="Describe your issue or request in detail…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Attach Image (optional)</label>
+          <input type="file" id="req-img" accept="image/*">
+        </div>
+        <button class="btn btn-primary" onclick="submitRequest()" id="submit-btn">Submit Request</button>
+      </div>
+      <div class="card" style="background:var(--surface2);">
+        <div class="card-title">💡 Tips</div>
+        <ul style="font-size:14px;color:var(--text-muted);line-height:2;list-style:none;padding:0;">
+          <li>✅ Be specific in your description</li>
+          <li>✅ Choose the correct category</li>
+          <li>✅ Attach an image if relevant</li>
+          <li>✅ Check your request status in "My Requests"</li>
+          <li>✅ Rate completed requests to help us improve</li>
+        </ul>
+        <div style="margin-top:20px;padding:14px;background:white;border-radius:8px;border:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px;">Status Guide</div>
+          <div style="font-size:13px;display:flex;flex-direction:column;gap:6px;">
+            <span><span class="badge badge-pending">Pending</span> — awaiting review</span>
+            <span><span class="badge badge-progress">In Progress</span> — being handled</span>
+            <span><span class="badge badge-completed">Completed</span> — resolved</span>
+            <span><span class="badge badge-rejected">Rejected</span> — not actionable</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BOOKINGS ── -->
+  <div id="tab-bookings" class="tab-panel">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🏛️ Book a Facility</div>
+        <div id="booking-alert" class="alert"></div>
+        <div class="form-group">
+          <label>Facility</label>
+          <select id="bk-facility">
+            <option>Conference Room A</option>
+            <option>Conference Room B</option>
+            <option>Seminar Hall</option>
+            <option>Computer Lab 1</option>
+            <option>Computer Lab 2</option>
+            <option>Sports Hall</option>
+            <option>Auditorium</option>
+            <option>Library Study Room</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="bk-date">
+        </div>
+        <div class="form-group">
+          <label>Time Slot</label>
+          <div class="slots-grid" id="slots-grid"></div>
+        </div>
+        <div class="form-group">
+          <label>Purpose</label>
+          <input type="text" id="bk-purpose" placeholder="e.g. Study group, Project meeting">
+        </div>
+        <button class="btn btn-primary" onclick="submitBooking()" id="booking-btn">Confirm Booking</button>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 My Bookings</div>
+        <div id="bookings-list"><div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No bookings yet</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="booking-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:220;align-items:center;justify-content:center;">
+    <div class="card" style="max-width:480px;width:90%;position:relative;">
+      <div class="card-title">✏️ Modify Booking</div>
+      <div class="form-group">
+        <label>Facility</label>
+        <select id="edit-bk-facility">
+          <option>Conference Room A</option>
+          <option>Conference Room B</option>
+          <option>Seminar Hall</option>
+          <option>Computer Lab 1</option>
+          <option>Computer Lab 2</option>
+          <option>Sports Hall</option>
+          <option>Auditorium</option>
+          <option>Library Study Room</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="edit-bk-date">
+      </div>
+      <div class="form-group">
+        <label>Time Slot</label>
+        <div class="slots-grid" id="edit-slots-grid"></div>
+      </div>
+      <div class="form-group">
+        <label>Purpose</label>
+        <input type="text" id="edit-bk-purpose" placeholder="e.g. Study group, Project meeting">
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-primary" onclick="saveBookingUpdate()">Save Changes</button>
+        <button class="btn btn-outline" onclick="closeBookingModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ANNOUNCEMENTS ── -->
+  <div id="tab-announcements" class="tab-panel">
+    <div class="section-header">
+      <h2 class="section-title">Announcements</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <input id="ann-search" type="text" placeholder="Search announcements..." oninput="loadAnnouncements()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;min-width:220px;">
+        <select id="ann-priority-filter" onchange="loadAnnouncements()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;min-width:170px;">
+          <option value="">All priorities</option>
+          <option value="normal">Normal</option>
+          <option value="high">High</option>
+          <option value="urgent">Urgent</option>
+        </select>
+      </div>
+    </div>
+    <div id="announcements-list"><div class="empty"><div class="empty-icon">📢</div><div class="empty-text">Loading…</div></div></div>
+  </div>
+
+  <!-- ── EVENTS ── -->
+  <div id="tab-events" class="tab-panel">
+    <div class="section-header">
+      <h2 class="section-title">Upcoming Events</h2>
+    </div>
+    <div id="events-list"><div class="empty"><div class="empty-icon">🗓️</div><div class="empty-text">Loading…</div></div></div>
+  </div>
+
+</div>
+
+<!-- FEEDBACK MODAL -->
+<div id="feedback-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+  <div class="card" style="max-width:420px;width:90%;position:relative;">
+    <div class="card-title">⭐ Rate this Request</div>
+    <p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;" id="fb-req-title"></p>
+    <label>Rating</label>
+    <div class="stars" id="fb-stars">
+      <span class="star" data-val="1">★</span>
+      <span class="star" data-val="2">★</span>
+      <span class="star" data-val="3">★</span>
+      <span class="star" data-val="4">★</span>
+      <span class="star" data-val="5">★</span>
+    </div>
+    <div class="form-group" style="margin-top:12px;">
+      <label>Comment (optional)</label>
+      <textarea id="fb-comment" placeholder="How was the service?"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-primary" onclick="submitFeedback()">Submit</button>
+      <button class="btn btn-outline" onclick="closeFeedback()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:3000';
+const token = localStorage.getItem('token');
+const uid   = localStorage.getItem('uid');
+
+if (!token) window.location = 'login.html';
+
+// Navbar
+const name = localStorage.getItem('name') || 'User';
+document.getElementById('nav-name').textContent = name;
+document.getElementById('nav-avatar').textContent = name[0].toUpperCase();
+let notificationsEnabled = localStorage.getItem('notificationsEnabled') !== 'false';
+let editingBookingId = null;
+let editSelectedSlot = '';
+
+function updateNotificationToggle() {
+  const btn = document.getElementById('notif-toggle');
+  if (!btn) return;
+  btn.textContent = notificationsEnabled ? '🔔 On' : '🔕 Off';
+}
+
+updateNotificationToggle();
+
+function logout() {
+  localStorage.clear();
+  window.location = 'login.html';
+}
+
+function auth() { return { Authorization: 'Bearer ' + token }; }
+
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const tabs = ['requests','submit','bookings','announcements','events'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+
+  if (tab === 'requests') loadRequests();
+  if (tab === 'bookings') { loadBookings(); renderSlots(); }
+  if (tab === 'announcements') loadAnnouncements();
+  if (tab === 'events') loadEvents();
+}
+
+function statusBadge(s) {
+  const map = { Pending:'pending', 'In Progress':'progress', Completed:'completed', Rejected:'rejected' };
+  return `<span class="badge badge-${map[s]||'pending'}">${s}</span>`;
+}
+
+// ── REQUESTS ──────────────────────────────────────────────────
+async function loadRequests() {
+  const res = await fetch(`${API}/requests/my`, { headers: auth() });
+  const data = await res.json();
+  const el = document.getElementById('requests-list');
+
+  if (!data.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No requests yet. Submit one!</div></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="item-list">${data.map(r => `
+    <div class="item-card">
+      ${r.image ? `<img src="${API}/uploads/${r.image}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;flex-shrink:0;">` : ''}
+      <div class="item-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <div class="item-title">${r.title}</div>
+          ${statusBadge(r.status)}
+        </div>
+        <div class="item-meta">📁 ${r.category} &nbsp;·&nbsp; ${r.description.slice(0,100)}${r.description.length>100?'…':''}</div>
+        ${r.admin_note ? `<div class="item-note">💬 Admin note: ${r.admin_note}</div>` : ''}
+        ${r.status === 'Completed' ? `<button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="openFeedback(${r.id}, '${r.title.replace(/'/g,"\\'")}')">⭐ Leave Feedback</button>` : ''}
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+async function submitRequest() {
+  const title    = document.getElementById('req-title').value.trim();
+  const desc     = document.getElementById('req-desc').value.trim();
+  const category = document.getElementById('req-category').value;
+  const imgFile  = document.getElementById('req-img').files[0];
+
+  if (!title || !desc) {
+    const a = document.getElementById('submit-alert');
+    a.textContent = 'Title and description are required.';
+    a.className = 'alert alert-error show';
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+
+  const form = new FormData();
+  form.append('title', title);
+  form.append('description', desc);
+  form.append('category', category);
+  if (imgFile) form.append('image', imgFile);
+
+  const res = await fetch(`${API}/request`, {
+    method: 'POST',
+    headers: auth(),
+    body: form
+  });
+
+  btn.disabled = false; btn.textContent = 'Submit Request';
+  const data = await res.json();
+
+  if (!res.ok) {
+    const a = document.getElementById('submit-alert');
+    a.textContent = data.error;
+    a.className = 'alert alert-error show';
+  } else {
+    document.getElementById('req-title').value = '';
+    document.getElementById('req-desc').value = '';
+    document.getElementById('req-img').value = '';
+    document.getElementById('submit-alert').className = 'alert';
+    toast('Request submitted successfully!');
+  }
+}
+
+// ── BOOKINGS ──────────────────────────────────────────────────
+const TIME_SLOTS = ['8:00–9:30','9:30–11:00','11:00–12:30','12:30–14:00','14:00–15:30','15:30–17:00','17:00–18:30'];
+let selectedSlot = '';
+
+function renderSlots() {
+  document.getElementById('slots-grid').innerHTML = TIME_SLOTS.map(s =>
+    `<div class="slot-btn${s===selectedSlot?' selected':''}" onclick="selectSlot('${s}')">${s}</div>`
+  ).join('');
+}
+
+function selectSlot(s) {
+  selectedSlot = s;
+  renderSlots();
+}
+
+// Set min date to today
+document.addEventListener('DOMContentLoaded', () => {
+  const d = document.getElementById('bk-date');
+  const e = document.getElementById('edit-bk-date');
+  const minDate = new Date().toISOString().split('T')[0];
+  if (d) d.min = minDate;
+  if (e) e.min = minDate;
+});
+
+async function submitBooking() {
+  const facility  = document.getElementById('bk-facility').value;
+  const date      = document.getElementById('bk-date').value;
+  const purpose   = document.getElementById('bk-purpose').value;
+  const alertEl   = document.getElementById('booking-alert');
+
+  if (!date || !selectedSlot) {
+    alertEl.textContent = 'Please select a date and time slot.';
+    alertEl.className = 'alert alert-error show';
+    return;
+  }
+
+  const btn = document.getElementById('booking-btn');
+  btn.disabled = true; btn.textContent = 'Booking…';
+
+  const res = await fetch(`${API}/booking`, {
+    method: 'POST',
+    headers: { ...auth(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ facility, date, time_slot: selectedSlot, purpose })
+  });
+  const data = await res.json();
+  btn.disabled = false; btn.textContent = 'Confirm Booking';
+
+  if (!res.ok) {
+    alertEl.textContent = data.error;
+    alertEl.className = 'alert alert-error show';
+  } else {
+    alertEl.className = 'alert';
+    selectedSlot = '';
+    renderSlots();
+    document.getElementById('bk-date').value = '';
+    document.getElementById('bk-purpose').value = '';
+    toast('Booking confirmed!');
+    loadBookings();
+  }
+}
+
+async function loadBookings() {
+  const res = await fetch(`${API}/bookings/my`, { headers: auth() });
+  const data = await res.json();
+  const el = document.getElementById('bookings-list');
+
+  if (!data.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No bookings yet</div></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="item-list">${data.map(b => `
+    <div class="item-card" style="flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div class="item-title">🏛️ ${b.facility}</div>
+        <span class="badge badge-${b.status.toLowerCase()}">${b.status}</span>
+      </div>
+      <div class="item-meta">${b.date} &nbsp;·&nbsp; ${b.time_slot}</div>
+      ${b.purpose ? `<div style="font-size:13px;color:var(--text-muted);">${b.purpose}</div>` : ''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${b.status === 'Confirmed' ? `<button class="btn btn-outline btn-sm" onclick="openBookingModal(${b.id}, '${b.facility.replace(/'/g,"\\'")}', '${b.date}', '${b.time_slot}', '${(b.purpose||'').replace(/'/g,"\\'")}')">✏️ Modify</button>` : ''}
+        ${b.status === 'Confirmed' ? `<button class="btn btn-outline btn-sm" style="color:var(--red);border-color:var(--red);" onclick="cancelBooking(${b.id})">Cancel</button>` : ''}
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+async function cancelBooking(id) {
+  if (!confirm('Cancel this booking?')) return;
+  await fetch(`${API}/booking/${id}/cancel`, { method: 'PUT', headers: auth() });
+  toast('Booking cancelled.');
+  loadBookings();
+}
+
+function renderEditSlots() {
+  document.getElementById('edit-slots-grid').innerHTML = TIME_SLOTS.map(s =>
+    `<div class="slot-btn${s===editSelectedSlot?' selected':''}" onclick="selectEditSlot('${s}')">${s}</div>`
+  ).join('');
+}
+
+function selectEditSlot(s) {
+  editSelectedSlot = s;
+  renderEditSlots();
+}
+
+function openBookingModal(id, facility, date, time_slot, purpose) {
+  editingBookingId = id;
+  document.getElementById('edit-bk-facility').value = facility;
+  document.getElementById('edit-bk-date').value = date;
+  editSelectedSlot = time_slot;
+  document.getElementById('edit-bk-purpose').value = purpose;
+  renderEditSlots();
+  const modal = document.getElementById('booking-modal');
+  modal.style.display = 'flex';
+}
+
+function closeBookingModal() {
+  editingBookingId = null;
+  editSelectedSlot = '';
+  document.getElementById('booking-modal').style.display = 'none';
+}
+
+async function saveBookingUpdate() {
+  if (!editingBookingId) return;
+  const facility = document.getElementById('edit-bk-facility').value;
+  const date = document.getElementById('edit-bk-date').value;
+  const purpose = document.getElementById('edit-bk-purpose').value;
+  if (!date || !editSelectedSlot) {
+    toast('Please select a date and time slot.', 'error');
+    return;
+  }
+
+  const res = await fetch(`${API}/booking/${editingBookingId}`, {
+    method: 'PUT',
+    headers: { ...auth(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ facility, date, time_slot: editSelectedSlot, purpose })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    toast(data.error || 'Could not update booking.', 'error');
+    return;
+  }
+  closeBookingModal();
+  toast('Booking updated!');
+  loadBookings();
+}
+
+function toggleNotifications() {
+  notificationsEnabled = !notificationsEnabled;
+  localStorage.setItem('notificationsEnabled', notificationsEnabled);
+  updateNotificationToggle();
+  toast(notificationsEnabled ? 'Notifications enabled' : 'Notifications disabled');
+}
+
+function showNotification(message, type = 'success') {
+  if (!notificationsEnabled) return;
+  toast(message, type);
+}
+
+// ── ANNOUNCEMENTS ─────────────────────────────────────────────
+async function loadAnnouncements() {
+  const search = document.getElementById('ann-search').value.trim();
+  const priority = document.getElementById('ann-priority-filter').value;
+  const params = new URLSearchParams();
+  if (search) params.set('q', search);
+  if (priority) params.set('priority', priority);
+
+  const res = await fetch(`${API}/announcements?${params.toString()}`, { headers: auth() });
+  const data = await res.json();
+  const el = document.getElementById('announcements-list');
+
+  if (!data.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📢</div><div class="empty-text">No announcements found</div></div>`;
+    return;
+  }
+
+  const urgent = data.filter(a => a.priority === 'urgent');
+  if (urgent.length) {
+    showNotification(`Urgent: ${urgent[0].title}`, 'error');
+  }
+
+  el.innerHTML = data.map(a => `
+    <div class="announce-card ${a.priority}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px;">
+        <strong style="font-size:15px;">${a.title}</strong>
+        <span class="badge badge-${a.priority}">${a.priority.toUpperCase()}</span>
+      </div>
+      <p style="font-size:14px;color:var(--text-muted);margin:0;">${a.message}</p>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">${new Date(a.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
+    </div>`).join('');
+}
+
+// ── EVENTS ────────────────────────────────────────────────────
+async function loadEvents() {
+  const res = await fetch(`${API}/events`, { headers: auth() });
+  const data = await res.json();
+  const el = document.getElementById('events-list');
+
+  if (!data.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🗓️</div><div class="empty-text">No upcoming events</div></div>`;
+    return;
+  }
+
+  const now = new Date();
+  const soon = data.find(e => {
+    const eventDate = new Date(e.date);
+    const diffDays = Math.ceil((eventDate - now) / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 && diffDays <= 3;
+  });
+  if (soon) showNotification(`Upcoming event: ${soon.title} on ${new Date(soon.date).toLocaleDateString()}`);
+
+  el.innerHTML = data.map(e => {
+    const d = new Date(e.date);
+    const day = d.getDate();
+    const mon = d.toLocaleDateString('en-GB',{month:'short'});
+    return `<div class="event-card">
+      <div class="event-date-box"><div class="day">${day}</div><div class="mon">${mon}</div></div>
+      <div>
+        <div style="font-weight:600;font-size:15px;margin-bottom:4px;">${e.title}</div>
+        <div style="font-size:13px;color:var(--text-muted);">📍 ${e.location}</div>
+        ${e.description ? `<div style="font-size:13px;margin-top:6px;">${e.description}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── FEEDBACK ──────────────────────────────────────────────────
+let fbRequestId = null, fbRating = 0;
+
+function openFeedback(reqId, reqTitle) {
+  fbRequestId = reqId; fbRating = 0;
+  document.getElementById('fb-req-title').textContent = reqTitle;
+  document.getElementById('fb-comment').value = '';
+  updateStars(0);
+  const modal = document.getElementById('feedback-modal');
+  modal.style.display = 'flex';
+}
+
+function closeFeedback() {
+  document.getElementById('feedback-modal').style.display = 'none';
+}
+
+document.querySelectorAll('.star').forEach(s => {
+  s.addEventListener('click', () => { fbRating = +s.dataset.val; updateStars(fbRating); });
+  s.addEventListener('mouseenter', () => updateStars(+s.dataset.val, true));
+  s.addEventListener('mouseleave', () => updateStars(fbRating));
+});
+
+function updateStars(val, hover = false) {
+  document.querySelectorAll('.star').forEach(s => {
+    const active = +s.dataset.val <= val;
+    s.classList.toggle('active', active && !hover);
+    s.classList.toggle('hover', active && hover);
+  });
+}
+
+async function submitFeedback() {
+  if (!fbRating) return toast('Please select a rating.', 'error');
+  const comment = document.getElementById('fb-comment').value;
+  await fetch(`${API}/feedback`, {
+    method: 'POST',
+    headers: { ...auth(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ request_id: fbRequestId, rating: fbRating, comment })
+  });
+  closeFeedback();
+  toast('Thank you for your feedback!');
+}
+
+// Initial load
+loadRequests();
+</script>
+</body>
+</html>

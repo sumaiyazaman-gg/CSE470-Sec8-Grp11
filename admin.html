@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – Campus Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <div class="navbar-logo">S</div>
+    <span class="navbar-title">Campus <span>Portal</span> — Admin</span>
+  </div>
+  <div class="navbar-user">
+    <div class="navbar-avatar" style="background:var(--gold);">A</div>
+    <span id="nav-name"></span>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<div class="page">
+
+  <!-- STATS -->
+  <div class="stats-grid" id="stats-grid">
+    <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Total Requests</div></div>
+    <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Pending</div></div>
+    <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Completed</div></div>
+    <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Students</div></div>
+    <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Bookings</div></div>
+    <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Avg Rating</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('requests')">📋 Requests</button>
+    <button class="tab" onclick="showTab('bookings')">🏛️ Bookings</button>
+    <button class="tab" onclick="showTab('announcements')">📢 Announcements</button>
+    <button class="tab" onclick="showTab('events')">🗓️ Events</button>
+    <button class="tab" onclick="showTab('feedback')">⭐ Feedback</button>
+    <button class="tab" onclick="showTab('users')">👥 Users</button>
+  </div>
+
+  <!-- ── REQUESTS ── -->
+  <div id="tab-requests" class="tab-panel active">
+    <div class="section-header">
+      <h2 class="section-title">All Requests</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <select id="filter-status" onchange="loadRequests()" style="width:auto;padding:8px 12px;">
+          <option value="">All Status</option>
+          <option>Pending</option>
+          <option>In Progress</option>
+          <option>Completed</option>
+          <option>Rejected</option>
+        </select>
+        <input id="request-search" type="text" placeholder="Search requests..." oninput="loadRequests()" style="min-width:220px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;">
+      </div>
+    </div>
+    <div id="requests-list"><div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading…</div></div></div>
+  </div>
+
+  <!-- ── BOOKINGS ── -->
+  <div id="tab-bookings" class="tab-panel">
+    <div class="section-header"><h2 class="section-title">All Bookings</h2></div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Student</th><th>Facility</th><th>Date</th><th>Time</th><th>Purpose</th><th>Status</th></tr>
+          </thead>
+          <tbody id="bookings-tbody"><tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted);">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ANNOUNCEMENTS ── -->
+  <div id="tab-announcements" class="tab-panel">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📢 Post Announcement</div>
+        <div id="ann-alert" class="alert"></div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="ann-title" placeholder="Announcement title">
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea id="ann-msg" placeholder="Write your announcement…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="ann-priority">
+            <option value="normal">Normal</option>
+            <option value="high">High</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="postAnnouncement()">Post Announcement</button>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 Posted Announcements</div>
+        <div id="announcements-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EVENTS ── -->
+  <div id="tab-events" class="tab-panel">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🗓️ Create Event</div>
+        <div id="event-alert" class="alert"></div>
+        <div class="form-group">
+          <label>Event Title</label>
+          <input type="text" id="ev-title" placeholder="Event name">
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="ev-date">
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" id="ev-location" placeholder="Room / building">
+        </div>
+        <div class="form-group">
+          <label>Description (optional)</label>
+          <textarea id="ev-desc" placeholder="Additional details…" style="min-height:70px;"></textarea>
+        </div>
+        <button class="btn btn-primary" id="event-action-btn" onclick="saveEvent()">Create Event</button>
+        <button class="btn btn-outline" id="event-cancel-btn" onclick="cancelEventEdit()" style="display:none;margin-left:10px;">Cancel</button>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 All Events</div>
+        <div id="events-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FEEDBACK ── -->
+  <div id="tab-feedback" class="tab-panel">
+    <div class="section-header"><h2 class="section-title">Student Feedback</h2></div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Student</th><th>Request</th><th>Rating</th><th>Comment</th></tr>
+          </thead>
+          <tbody id="feedback-tbody"><tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text-muted);">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── USERS ── -->
+  <div id="tab-users" class="tab-panel">
+    <div class="section-header"><h2 class="section-title">All Users</h2></div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Name</th><th>Email</th><th>Role</th></tr>
+          </thead>
+          <tbody id="users-tbody"><tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text-muted);">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- UPDATE REQUEST MODAL -->
+<div id="update-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+  <div class="card" style="max-width:480px;width:90%;">
+    <div class="card-title">✏️ Update Request</div>
+    <p style="font-size:14px;font-weight:600;margin-bottom:16px;" id="modal-title"></p>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="modal-status">
+        <option>Pending</option>
+        <option>In Progress</option>
+        <option>Completed</option>
+        <option>Rejected</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Admin Note (optional)</label>
+      <textarea id="modal-note" placeholder="Add a note for the student…" style="min-height:80px;"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-primary" onclick="saveUpdate()">Save</button>
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:3000';
+const token = localStorage.getItem('token');
+const role  = localStorage.getItem('role');
+
+if (!token || role !== 'admin') window.location = 'login.html';
+
+document.getElementById('nav-name').textContent = localStorage.getItem('name') || 'Admin';
+
+function logout() { localStorage.clear(); window.location = 'login.html'; }
+function auth() { return { Authorization: 'Bearer ' + token }; }
+
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+function statusBadge(s) {
+  const map = { Pending:'pending', 'In Progress':'progress', Completed:'completed', Rejected:'rejected', Confirmed:'confirmed', Cancelled:'cancelled' };
+  return `<span class="badge badge-${map[s]||'pending'}">${s}</span>`;
+}
+
+function showTab(tab) {
+  const tabs = ['requests','bookings','announcements','events','feedback','users'];
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', tabs[i] === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+
+  if (tab === 'requests')      loadRequests();
+  if (tab === 'bookings')      loadBookings();
+  if (tab === 'announcements') loadAnnouncements();
+  if (tab === 'events')        loadEvents();
+  if (tab === 'feedback')      loadFeedback();
+  if (tab === 'users')         loadUsers();
+}
+
+// ── STATS ─────────────────────────────────────────────────────
+async function loadStats() {
+  const res = await fetch(`${API}/stats`, { headers: auth() });
+  const d = await res.json();
+  const nums = [d.total_requests, d.pending, d.completed, d.total_users, d.total_bookings, d.avg_rating || '—'];
+  document.querySelectorAll('.stat-num').forEach((el, i) => el.textContent = nums[i]);
+}
+loadStats();
+
+// ── REQUESTS ──────────────────────────────────────────────────
+let editId = null;
+
+async function loadRequests() {
+  const status = document.getElementById('filter-status').value;
+  const search = document.getElementById('request-search').value.trim();
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+  if (search) params.set('search', search);
+  const res = await fetch(`${API}/requests?${params.toString()}`, { headers: auth() });
+  let data = await res.json();
+
+  const el = document.getElementById('requests-list');
+  if (!data.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No requests found</div></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="item-list">${data.map(r => `
+    <div class="item-card">
+      ${r.image ? `<img src="${API}/uploads/${r.image}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;flex-shrink:0;">` : ''}
+      <div class="item-body">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <div>
+            <div class="item-title">${r.title}</div>
+            <div class="item-meta">👤 ${r.student_name} (${r.student_email}) &nbsp;·&nbsp; 📁 ${r.category}</div>
+            <div style="font-size:13px;margin-bottom:8px;">${r.description}</div>
+            ${r.admin_note ? `<div class="item-note">💬 ${r.admin_note}</div>` : ''}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+            ${statusBadge(r.status)}
+            <button class="btn btn-outline btn-sm" onclick="openModal(${r.id}, '${r.title.replace(/'/g,"\\'")}', '${r.status}', '${(r.admin_note||'').replace(/'/g,"\\'")}')">✏️ Update</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function openModal(id, title, status, note) {
+  editId = id;
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-status').value = status;
+  document.getElementById('modal-note').value = note;
+  document.getElementById('update-modal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('update-modal').style.display = 'none';
+}
+
+async function saveUpdate() {
+  const status    = document.getElementById('modal-status').value;
+  const admin_note = document.getElementById('modal-note').value;
+  await fetch(`${API}/request/${editId}`, {
+    method: 'PUT',
+    headers: { ...auth(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status, admin_note })
+  });
+  closeModal();
+  toast('Request updated.');
+  loadRequests();
+  loadStats();
+}
+
+// ── BOOKINGS ──────────────────────────────────────────────────
+async function loadBookings() {
+  const res = await fetch(`${API}/bookings`, { headers: auth() });
+  const data = await res.json();
+  const tb = document.getElementById('bookings-tbody');
+  if (!data.length) {
+    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted);">No bookings yet</td></tr>';
+    return;
+  }
+  tb.innerHTML = data.map(b => `<tr>
+    <td><strong>${b.student_name}</strong></td>
+    <td>${b.facility}</td>
+    <td>${b.date}</td>
+    <td>${b.time_slot}</td>
+    <td style="max-width:200px;">${b.purpose || '—'}</td>
+    <td>${statusBadge(b.status)}</td>
+  </tr>`).join('');
+}
+
+// ── ANNOUNCEMENTS ─────────────────────────────────────────────
+async function loadAnnouncements() {
+  const res = await fetch(`${API}/announcements`, { headers: auth() });
+  const data = await res.json();
+  const el = document.getElementById('announcements-list');
+  if (!data.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📢</div><div class="empty-text">None posted yet</div></div>`;
+    return;
+  }
+  el.innerHTML = data.map(a => `
+    <div class="announce-card ${a.priority}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+      <div>
+        <div style="font-weight:600;margin-bottom:4px;">${a.title} <span class="badge badge-${a.priority}" style="font-size:10px;">${a.priority}</span></div>
+        <div style="font-size:13px;color:var(--text-muted);">${a.message}</div>
+      </div>
+      <button class="btn btn-danger btn-sm" style="flex-shrink:0;" onclick="deleteAnnouncement(${a.id})">🗑️</button>
+    </div>`).join('');
+}
+
+async function postAnnouncement() {
+  const title    = document.getElementById('ann-title').value.trim();
+  const message  = document.getElementById('ann-msg').value.trim();
+  const priority = document.getElementById('ann-priority').value;
+  if (!title || !message) {
+    const a = document.getElementById('ann-alert');
+    a.textContent = 'Title and message are required.';
+    a.className = 'alert alert-error show';
+    return;
+  }
+  await fetch(`${API}/announcement`, {
+    method: 'POST',
+    headers: { ...auth(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, message, priority })
+  });
+  document.getElementById('ann-title').value = '';
+  document.getElementById('ann-msg').value = '';
+  document.getElementById('ann-alert').className = 'alert';
+  toast('Announcement posted!');
+  loadAnnouncements();
+}
+
+async function deleteAnnouncement(id) {
+  if (!confirm('Delete this announcement?')) return;
+  await fetch(`${API}/announcement/${id}`, { method: 'DELETE', headers: auth() });
+  toast('Deleted.');
+  loadAnnouncements();
+}
+
+// ── EVENTS ────────────────────────────────────────────────────
+let editingEventId = null;
+
+async function loadEvents() {
+  const res = await fetch(`${API}/events`, { headers: auth() });
+  const data = await res.json();
+  const el = document.getElementById('events-list');
+  if (!data.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🗓️</div><div class="empty-text">No events yet</div></div>`;
+    return;
+  }
+  el.innerHTML = data.map(e => `
+    <div class="event-card" style="align-items:center;justify-content:space-between;">
+      <div style="display:flex;gap:12px;align-items:flex-start;flex:1;">
+        <div class="event-date-box">
+          <div class="day">${new Date(e.date).getDate()}</div>
+          <div class="mon">${new Date(e.date).toLocaleDateString('en-GB',{month:'short'})}</div>
+        </div>
+        <div>
+          <div style="font-weight:600;">${e.title}</div>
+          <div style="font-size:13px;color:var(--text-muted);">📍 ${e.location}</div>
+          ${e.description ? `<div style="font-size:13px;margin-top:4px;">${e.description}</div>` : ''}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-outline btn-sm" onclick="startEventEdit(${e.id}, '${e.title.replace(/'/g,"\\'")}', '${e.date}', '${e.location.replace(/'/g,"\\'")}', '${(e.description||'').replace(/'/g,"\\'")}')">✏️ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteEvent(${e.id})">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+function resetEventForm() {
+  editingEventId = null;
+  document.getElementById('ev-title').value = '';
+  document.getElementById('ev-date').value = '';
+  document.getElementById('ev-location').value = '';
+  document.getElementById('ev-desc').value = '';
+  document.getElementById('event-alert').className = 'alert';
+  document.getElementById('event-action-btn').textContent = 'Create Event';
+  document.getElementById('event-cancel-btn').style.display = 'none';
+}
+
+function startEventEdit(id, title, date, location, description) {
+  editingEventId = id;
+  document.getElementById('ev-title').value = title;
+  document.getElementById('ev-date').value = date;
+  document.getElementById('ev-location').value = location;
+  document.getElementById('ev-desc').value = description;
+  document.getElementById('event-action-btn').textContent = 'Update Event';
+  document.getElementById('event-cancel-btn').style.display = 'inline-flex';
+}
+
+function cancelEventEdit() {
+  resetEventForm();
+}
+
+async function saveEvent() {
+  const title    = document.getElementById('ev-title').value.trim();
+  const date     = document.getElementById('ev-date').value;
+  const location = document.getElementById('ev-location').value.trim();
+  const description = document.getElementById('ev-desc').value.trim();
+  if (!title || !date || !location) {
+    const a = document.getElementById('event-alert');
+    a.textContent = 'Title, date and location are required.';
+    a.className = 'alert alert-error show';
+    return;
+  }
+
+  const url = editingEventId ? `${API}/event/${editingEventId}` : `${API}/event`;
+  const method = editingEventId ? 'PUT' : 'POST';
+  const res = await fetch(url, {
+    method,
+    headers: { ...auth(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, date, location, description })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    const a = document.getElementById('event-alert');
+    a.textContent = data.error || 'Could not save event.';
+    a.className = 'alert alert-error show';
+    return;
+  }
+
+  resetEventForm();
+  toast(editingEventId ? 'Event updated!' : 'Event created!');
+  loadEvents();
+}
+
+async function deleteEvent(id) {
+  if (!confirm('Delete this event?')) return;
+  await fetch(`${API}/event/${id}`, { method: 'DELETE', headers: auth() });
+  toast('Deleted.');
+  loadEvents();
+}
+
+// ── FEEDBACK ──────────────────────────────────────────────────
+async function loadFeedback() {
+  const res = await fetch(`${API}/feedback`, { headers: auth() });
+  const data = await res.json();
+  const tb = document.getElementById('feedback-tbody');
+  if (!data.length) {
+    tb.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text-muted);">No feedback yet</td></tr>';
+    return;
+  }
+  tb.innerHTML = data.map(f => `<tr>
+    <td><strong>${f.student_name}</strong></td>
+    <td>${f.request_title}</td>
+    <td>${'★'.repeat(f.rating)}<span style="color:#d1d5db;">${'★'.repeat(5-f.rating)}</span></td>
+    <td style="max-width:250px;">${f.comment || '—'}</td>
+  </tr>`).join('');
+}
+
+// ── USERS ─────────────────────────────────────────────────────
+async function loadUsers() {
+  const res = await fetch(`${API}/users`, { headers: auth() });
+  const data = await res.json();
+  const tb = document.getElementById('users-tbody');
+  tb.innerHTML = data.map(u => `<tr>
+    <td>${u.id}</td>
+    <td><strong>${u.name}</strong></td>
+    <td>${u.email}</td>
+    <td><span class="badge ${u.role==='admin'?'badge-progress':'badge-normal'}">${u.role}</span></td>
+  </tr>`).join('');
+}
+
+// Initial load
+loadRequests();
+</script>
+</body>
+</html>
