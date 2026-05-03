@@ -45,7 +45,7 @@ npm run dev
 ## Default Admin Account
 | Field    | Value                        |
 |----------|------------------------------|
-| Email    | admin@university.edu.bd      |
+| Email    | admin@g.bracu.ac.bd     |
 | Password | admin123                     |
 
 ---
@@ -53,7 +53,7 @@ npm run dev
 ## Features
 
 ### Student
-- Register / Login with university email (@university.edu.bd)
+- Register / Login with university email (@g.bracu.ac.bd)
 - Submit requests with image upload (category, title, description)
 - View own requests + status updates + admin notes
 - Book facilities with time slots (conflict detection)

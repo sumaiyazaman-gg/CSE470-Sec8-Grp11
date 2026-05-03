@@ -3,7 +3,7 @@ const { JWT_SECRET } = require("../middleware/auth");
 const { findUserByEmail, createUser } = require("../models/userModel");
 
 function validateEmail(email) {
-  return email?.endsWith("@university.edu.bd");
+  return email?.endsWith("@g.bracu.ac.bd");
 }
 
 async function login(req, res) {
@@ -11,7 +11,7 @@ async function login(req, res) {
   if (!email || !password)
     return res.status(400).json({ error: "Email and password required" });
   if (!validateEmail(email))
-    return res.status(400).json({ error: "Must use university email (@university.edu.bd)" });
+    return res.status(400).json({ error: "Must use university email (@g.bracu.ac.bd)" });
 
   try {
     const users = await findUserByEmail(email);
@@ -35,8 +35,8 @@ async function login(req, res) {
 }
 
 async function register(req, res) {
-  const { email, password, name } = req.body;
-  if (!email || !password || !name)
+  const { email, password, name, role } = req.body;
+  if (!email || !password || !name || !role)
     return res.status(400).json({ error: "All fields required" });
   if (!validateEmail(email))
     return res.status(400).json({ error: "Must use university email" });
@@ -48,13 +48,13 @@ async function register(req, res) {
     if (existingUsers.length > 0)
       return res.status(409).json({ error: "Account already exists. Please login." });
 
-    const result = await createUser({ email, name, password, role: "student" });
+    const result = await createUser({ email, name, password, role });
     const token = jwt.sign(
-      { id: result.insertId, email, name, role: "student" },
+      { id: result.insertId, email, name, role},
       JWT_SECRET,
       { expiresIn: "8h" }
     );
-    res.json({ token, user: { id: result.insertId, name, role: "student", email } });
+    res.json({ token, user: { id: result.insertId, name, role, email } });
   } catch (err) {
     res.status(500).json({ error: "Could not create account" });
   }

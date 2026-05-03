@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
-const { addEvent, listEvents, removeEvent } = require("../controllers/eventController");
+const { addEvent, listEvents, removeEvent, updateEvent } = require("../controllers/eventController");
 
 router.post("/event", adminMiddleware, addEvent);
 router.get("/events", authMiddleware, listEvents);

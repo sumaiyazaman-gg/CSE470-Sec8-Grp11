@@ -17,5 +17,13 @@ async function getAllUsers() {
   const [rows] = await db.query("SELECT id, name, email, role FROM users ORDER BY id DESC");
   return rows;
 }
+function goToProfile() {
+    const role = localStorage.getItem("role");
 
-module.exports = { findUserByEmail, createUser, getAllUsers };
+    if (role === "admin") {
+        window.location.href = "admin.html"; 
+    } else {
+        window.location.href = "profile.html";
+    }
+}
+module.exports = { findUserByEmail, createUser, getAllUsers, goToProfile };

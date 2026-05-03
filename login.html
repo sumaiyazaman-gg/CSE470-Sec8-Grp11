@@ -27,7 +27,7 @@
     <div id="login-form">
       <div class="form-group">
         <label>University Email</label>
-        <input type="email" id="login-email" placeholder="you@university.edu.bd">
+        <input type="email" id="login-email" placeholder="@g.bracu.ac.bd">
       </div>
       <div class="form-group">
         <label>Password</label>
@@ -37,7 +37,7 @@
         Sign In
       </button>
       <p style="font-size:13px;color:var(--text-muted);margin-top:14px;text-align:center;">
-        Admin: admin@university.edu.bd / admin123
+        Admin: Welcome to Campus Portal!
       </p>
     </div>
 
@@ -49,11 +49,20 @@
       </div>
       <div class="form-group">
         <label>University Email</label>
-        <input type="email" id="reg-email" placeholder="you@university.edu.bd">
+        <input type="email" id="reg-email" placeholder="you@g.bracu.ac.bd">
       </div>
       <div class="form-group">
         <label>Password</label>
         <input type="password" id="reg-pass" placeholder="Min. 6 characters" onkeydown="if(event.key==='Enter') doRegister()">
+      </div>
+        <div class="form-group">
+        <label>Role</label>
+         <select id="reg-role">
+         <option value="student">Student</option>
+         <option value="alumni">Alumni</option>
+         <option value="faculty">Faculty</option>
+      <!--<option value="admin">Admin</option>-->
+      </select>
       </div>
       <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;" onclick="doRegister()" id="reg-btn">
         Create Account
@@ -96,7 +105,7 @@
     btn.disabled = true; btn.textContent = 'Signing in…';
 
     try {
-      const res = await fetch('http://localhost:3000/login', {
+     const res = await fetch('http://localhost:3000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -122,6 +131,7 @@
     const name  = document.getElementById('reg-name').value.trim();
     const email = document.getElementById('reg-email').value.trim();
     const password = document.getElementById('reg-pass').value;
+    const role = document.getElementById('reg-role').value;
     if (!name || !email || !password) return showAlert('All fields are required.');
 
     const btn = document.getElementById('reg-btn');
@@ -131,14 +141,14 @@
       const res = await fetch('http://localhost:3000/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+       body: JSON.stringify({ name, email, password, role })
       });
       const data = await res.json();
       if (!res.ok) return showAlert(data.error || 'Registration failed.');
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('uid', data.user.id);
-      localStorage.setItem('name', data.user.name);
+      localStorage.setItem('name', data.user.name);  
       localStorage.setItem('role', data.user.role);
       localStorage.setItem('email', data.user.email);
       window.location = 'dashboard.html';

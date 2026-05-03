@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Insert default admin (password: admin123)
 INSERT IGNORE INTO users (email, name, password, role)
-VALUES ('admin@university.edu.bd', 'Admin', 'admin123', 'admin');
+VALUES ('admin@g.bracu.ac.bd ', 'Admin', 'admin123', 'admin');
 
 -- Requests
 CREATE TABLE IF NOT EXISTS requests (
@@ -77,3 +77,5 @@ CREATE TABLE IF NOT EXISTS events (
   description TEXT,
   created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+ALTER TABLE users 
+MODIFY role ENUM('student','alumni','faculty','admin') DEFAULT 'student';

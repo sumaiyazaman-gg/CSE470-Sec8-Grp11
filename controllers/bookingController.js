@@ -64,8 +64,9 @@ async function updateBooking(req, res) {
 
     res.json({ message: "Booking updated" });
   } catch (err) {
-    res.status(500).json({ error: "Could not update booking" });
-  }
+  console.error(err); 
+  res.status(500).json({ error: err.message });
+}
 }
 
 async function cancelMyBooking(req, res) {

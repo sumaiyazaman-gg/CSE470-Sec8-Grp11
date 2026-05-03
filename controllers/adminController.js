@@ -19,4 +19,9 @@ async function stats(req, res) {
   }
 }
 
-module.exports = { listUsers, stats };
+function goToProfile(req, res) {
+  const userId = req.params.id;
+  res.redirect(`/profile/${userId}`);
+}
+
+module.exports = { listUsers, stats, goToProfile };

@@ -5,6 +5,7 @@ const {
   getMyBookings,
   getAllBookingsForAdmin,
   cancelMyBooking,
+  updateBooking,
 } = require("../controllers/bookingController");
 
 router.post("/booking", authMiddleware, createNewBooking);
